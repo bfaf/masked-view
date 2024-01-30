@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.view.View;
+import android.animation.ValueAnimator;
 
 import com.facebook.react.views.view.ReactViewGroup;
 
@@ -17,6 +18,7 @@ public class RNCMaskedView extends ReactViewGroup {
   private boolean mBitmapMaskInvalidated = false;
   private Paint mPaint;
   private PorterDuffXfermode mPorterDuffXferMode;
+  private ValueAnimator animator;
 
   public RNCMaskedView(Context context) {
     super(context);
@@ -26,6 +28,18 @@ public class RNCMaskedView extends ReactViewGroup {
 
     mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     mPorterDuffXferMode = new PorterDuffXfermode(PorterDuff.Mode.DST_IN);
+
+    animator = ValueAnimator.ofFloat(0, 1);
+    animator.setDuration(60000); // Change duration as needed
+    animator.setRepeatCount(ValueAnimator.INFINITE);
+    animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+    // Force a refresh on each animation frame
+    invalidate();
+        }
+    });
+    animator.start();
   }
 
   @Override
@@ -114,4 +128,13 @@ public class RNCMaskedView extends ReactViewGroup {
       setLayerType(LAYER_TYPE_HARDWARE, null);
     }
   }
+
+  @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // Stop the animator when view is detached
+        if (animator != null) {
+            animator.end();
+        }
+    }
 }
